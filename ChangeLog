@@ -1,3 +1,8 @@
+2016-12-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* dejagnuboards/attiny40-sim.exp (extra_ldflags)
+	[__DATA_REGION_LENGTH__]: Increase from 2K to 8K.
+
 2016-11-23  Martin Ettl  <ettlmartin@users.sf.net>
 
 	* gen-flag-tables.c (main): Close input file in case of an error.
