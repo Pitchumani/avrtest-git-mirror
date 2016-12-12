@@ -3,6 +3,8 @@
 
 #define AVRTEST_INVALID_OPCODE 0xffff
 
+#if !defined (__ASSEMBLER__)
+
 enum
   {
     LOG_ADDR_CMD,
@@ -446,4 +448,17 @@ avrtest_reset_all (void)
 
 #endif /* IN_AVRTEST */
 
+#else /* ASSEMBLER */
+
+.macro avrtest_syscall _sysno
+    cpse r\_sysno, r\_sysno
+    .word AVRTEST_INVALID_OPCODE
+.endm
+
+#define LOG_OFF avrtest_syscall 0
+#define LOG_ON  avrtest_syscall 1
+#define AVRTEST_ABORT  avrtest_syscall 31
+#define AVRTEST_EXIT   avrtest_syscall 30
+
+#endif /* ASSEMBLER */
 #endif /* AVRTEST_H */

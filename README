@@ -305,6 +305,7 @@ the compiler to machine instructions that might affect code generation
 for the surrounding code (register allocation, jump offsets, ...).
 The commands have low overhead; it's not more than an avrtest syscall.
 
+LOG_ON and LOG_OFF are also supported for assembler.
 
 ====================================
  Logging values to the host computer
@@ -553,3 +554,38 @@ program start:
     avrtest_reset_all();          Reset all of them
 
 The simulator does not account cycles to syscalls.
+
+
+===============================
+ Assembler support in avrtest.h
+===============================
+
+avrtest.h adds assembler support for a few avrtest features:
+
+    avrtest_syscall <sysno>
+    LOG_ON              ;; Same as "avrtest_syscall 1"
+    LOG_OFF             ;; Same as "avrtest_syscall 0"
+    AVRTEST_ABORT       ;; Same as "avrtest_syscall 31"
+    AVRTEST_EXIT        ;; Same as "avrtest_syscall 30", exit value = R25:R24.
+
+"avrtest_syscall <sysno>" is an assembler macro which expands to
+
+    CPSE  R<sysno>, R<sysno>
+    .word 0xffff
+
+i.e. it does not change any register and does not change the program
+status (SREG).
+
+Example:
+
+    #include "avrtest.h"  
+
+    .text
+    .global func
+
+    func:
+        LOG_ON
+        ret
+
+And then call this function from assembler or from C code after
+declaring it with "extern void func (void);".

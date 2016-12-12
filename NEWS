@@ -3,6 +3,15 @@
                           avrtest NEWS
                           ============
 
+* Add assembler support to avrtest.h for:                  r196  2016-12-12  
+
+  -  LOG_ON
+  -  LOG_OFF
+  -  AVRTEST_EXIT
+  -  AVRTEST_ABORT
+  -  avrtest_syscall <sysno>
+
+  
 * Support logging of 64-bit values.                        r194  2016-12-12
 
   

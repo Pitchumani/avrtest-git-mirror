@@ -1,5 +1,14 @@
 2016-12-12  Georg-Johann Lay  <avr@gjlay.de>
 
+	Add assembler support to avrtest.h.
+
+	* avrtest.h: Protect C-code with #if !defined (__ASSEMBLER__).
+	(LOG_ON, LOG_OFF) [ASSEMBLER]: New C macros.
+	(AVRTEST_ABORT, AVRTEST_EXIT) [ASSEMBLER]: New C macros.
+	(avrtest_syscall <N>) [ASSEMBLER]: New asm macro.
+
+2016-12-12  Georg-Johann Lay  <avr@gjlay.de>
+
 	Support logging of 64-bit values.
 
 	* avrtest.h (LOG_U64_CMD, LOG_S64_CMD, LOG_S64_CMD): New macros.
