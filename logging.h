@@ -60,6 +60,7 @@ enum
 extern const layout_t layout[];
 
 extern unsigned get_r20_value (const layout_t*);
+extern unsigned long long get_r18_value (const layout_t*);
 extern avr_float_t decode_avr_float (unsigned);
 extern char* read_string (char*, unsigned, bool, size_t);
 

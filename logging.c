@@ -245,8 +245,8 @@ log_finish_string_table (void)
   string_table_t *s = & string_table;
 
   if (options.do_verbose)
-    printf (">>> strtab[%u] %d entries, %d usable, %d functions, %d other, "
-            "%d bad, %d unused vectors\n", 0U + s->size, s->n_entries,
+    printf (">>> strtab[%zu] %d entries, %d usable, %d functions, %d other, "
+            "%d bad, %d unused vectors\n", s->size, s->n_entries,
             s->n_strings, s->n_funcs, s->n_strings - s->n_funcs, s->n_bad,
             s->n_vec);
 
@@ -427,6 +427,26 @@ get_r20_value (const layout_t *lay)
 }
 
 
+/* Read a value as unsigned long long from R18.  Bytesize (1..8) and
+   signedness are determined by respective layout[].  If the value is signed
+   a cast to signed will do the conversion.  */
+
+unsigned long long
+get_r18_value (const layout_t *lay)
+{
+  byte *p = log_cpu_address (18, AR_REG);
+  unsigned long long val = 0;
+
+  if (lay->signed_p && (0x80 & p[lay->size - 1]))
+    val = -1ull;
+
+  for (int n = lay->size; n;)
+    val = (val << 8) | p[--n];
+
+  return val;
+}
+
+
 typedef struct
 {
   // Offset set by RESET.
@@ -537,6 +557,13 @@ sys_log_dump (int what)
       printf (fmt, val);
       break;
 
+    case LOG_S64_CMD:
+    case LOG_U64_CMD:
+    case LOG_X64_CMD:
+      log_append ("log %d-byte value", lay->size);
+      printf (fmt, get_r18_value (lay));
+      break;
+
     case LOG_SET_FMT_ONCE_CMD:
     case LOG_SET_PFMT_ONCE_CMD:
       log_append ("log set format");
@@ -631,7 +658,8 @@ do_syscall (int sysno, int val)
     case 4: sys_ticks_cmd (val);    break;
     case 5: sys_perf_cmd (val);     break;
     case 6: sys_perf_tag_cmd (val); break;
-    case 7: sys_log_dump (val);     break;
+    case 7:
+    case 8: sys_log_dump (val);     break;
     }
 }
 
@@ -714,16 +742,19 @@ layout[LOG_X_sentinel] =
     [LOG_U16_CMD] = { 2, " %u ", false, false },
     [LOG_U24_CMD] = { 3, " %u ", false, false },
     [LOG_U32_CMD] = { 4, " %u ", false, false },
+    [LOG_U64_CMD] = { 8, " %llu ", false, false },
     
     [LOG_S8_CMD]  = { 1, " %d ", true,  false },
     [LOG_S16_CMD] = { 2, " %d ", true,  false },
     [LOG_S24_CMD] = { 3, " %d ", true,  false },
     [LOG_S32_CMD] = { 4, " %d ", true,  false },
+    [LOG_S64_CMD] = { 8, " %lld ", true,  false },
 
     [LOG_X8_CMD]  = { 1, " 0x%02x ", false, false },
     [LOG_X16_CMD] = { 2, " 0x%04x ", false, false },
     [LOG_X24_CMD] = { 3, " 0x%06x ", false, false },
     [LOG_X32_CMD] = { 4, " 0x%08x ", false, false },
+    [LOG_X64_CMD] = { 8, " 0x%016llx ", false, false },
 
     [LOG_UNSET_FMT_CMD]     = { 0, NULL, false, false },
     [LOG_SET_FMT_CMD]       = { 2, NULL, false, false },

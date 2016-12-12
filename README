@@ -344,7 +344,8 @@ printf format string to print the supplied value:
 !!! by specifying a format string that does not match the value!
 
 avrtest_log uses "double" to represent float and "unsigned int" for all
-other values.  The default format strings for the vanilla LOG_XXX are:
+other values up to 4 bytes.  The default format strings for the vanilla
+LOG_XXX are:
 
     " %u "              for the "U" variants
     " %d "              for the "S" variants
@@ -355,6 +356,12 @@ other values.  The default format strings for the vanilla LOG_XXX are:
     " %.6f "            for floats
     " 0x%04x "          for addresses
 
+For 8-byte values, the internal representation is "unsigned long long", and
+the default format strings are:
+
+    " %llu "              for the "U" variant
+    " %lld "              for the "S" variant
+    " 0x%016llx "         for the "X" variant
 
 ========================
  Performance measurement

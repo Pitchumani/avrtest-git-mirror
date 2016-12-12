@@ -1,5 +1,23 @@
 2016-12-12  Georg-Johann Lay  <avr@gjlay.de>
 
+	Support logging of 64-bit values.
+
+	* avrtest.h (LOG_U64_CMD, LOG_S64_CMD, LOG_S64_CMD): New macros.
+	(LOG_U64, LOG_S64, LOG_X64): New macros.
+	(LOG_FMT_U64, LOG_FMT_S64, LOG_FMT_X64): New macros.
+	(LOG_PFMT_U64, LOG_PFMT_S64, LOG_PFMT_X64): New macros.
+	(avrtest_syscall_8_u64): New inline function.
+	(avrtest_syscall_8_s64): New inline function.
+	* logging.h (get_r18_value): New prototype.
+	* logging.c (get_r18_value): New function.
+	(sys_log_dump) [LOG_U64_CMD, LOG_S64_CMD, LOG_S64_CMD]: Handle.
+	(do_syscall) [sysno=8]: Handle.
+	(layout) [LOG_U64_CMD, LOG_S64_CMD, LOG_S64_CMD]: Add entries.
+	* avrtest.c (func_SYSCALL) [sysno=8]: Handle.
+	* README (Logging values to the host computer): Adjust.
+
+2016-12-12  Georg-Johann Lay  <avr@gjlay.de>
+
 	* dejagnuboards/attiny40-sim.exp (extra_ldflags)
 	[__DATA_REGION_LENGTH__]: Increase from 2K to 8K.
 

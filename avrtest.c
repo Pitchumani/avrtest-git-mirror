@@ -1712,6 +1712,9 @@ static OP_FUNC_TYPE func_SYSCALL (int sysno, int rr)
     case 7:                          // Logging values
       do_syscall (sysno, get_word_reg_raw (24));
       break;
+    case 8:                          // Logging 64-bit values
+      do_syscall (sysno, get_word_reg_raw (26));
+      break;
     }
 }
 
