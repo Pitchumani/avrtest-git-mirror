@@ -1082,8 +1082,8 @@ write_dot_node (FILE *stream, symbol_t *n, const char *extra)
   else if (! n->cycles.account)
     fprintf (stream, "[color=gray][fontcolor=gray]");
   else
-    fprintf (stream, "[style=filled fillcolor=\"%1.3lf %1.3lf %1.3lf\"]",
-             0.4 * (1 - pow(per,0.3)), pow (per, 0.5), 1.0);
+    fprintf (stream, "[style=filled fillcolor=\"%1.3f %1.3f %1.3f\"]",
+             0.4 * fabs (1 - pow(per,0.3)), pow (per, 0.5), 1.0);
   fprintf (stream, ";\n");
 }
 
@@ -1176,11 +1176,12 @@ make_dot_filename (void)
   if ((p = strrchr (s, '/')))  s = p;
   if ((p = strrchr (s, '\\'))) s = p;
   size_t len = (p = strrchr (s, '.'))
-    ? (size_t) (p - program.name) - 1
+    ? (size_t) (p - program.name)
     : strlen (program.name);
 
   char *fname = get_mem (len + 1 + strlen (suffix), sizeof (char), ".dot");
   strncpy (fname, program.name, len);
+  fname[len] = '\0';
   return strcat (fname, suffix);
 }
 
