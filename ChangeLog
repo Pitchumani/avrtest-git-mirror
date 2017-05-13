@@ -1,3 +1,12 @@
+2016-12-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	Fix problems with negative colors and with .dot file name.
+
+	* graph.c (make_dot_filename): Fix problem with basename length
+	which was 1 character too short.
+	(write_dot_node): Use fabs() aroung value for red color component.
+	Use "%f" print modifier for double.
+
 2016-12-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	Add assembler support to avrtest.h.
