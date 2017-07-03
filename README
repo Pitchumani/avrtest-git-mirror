@@ -343,6 +343,8 @@ printf format string to print the supplied value:
 !!! Please use format strings with care!  You can easily crash avrtest_log
 !!! and make it raise a Segmentation Fault or other undefined behaviour
 !!! by specifying a format string that does not match the value!
+!!! Notice that the %-formats below refer to the HOST machine, i.e. the
+!!! machine that executes avrtest_log!
 
 avrtest_log uses "double" to represent float and "unsigned int" for all
 other values up to 4 bytes.  The default format strings for the vanilla
