@@ -280,7 +280,7 @@ lpush (list_t **head, edge_t *e)
 }
 
 
-/* Remove first elment of list *HEAD and add it to the free list `yfree'.  */
+/* Remove first element of list *HEAD and add it to the free list `yfree'.  */
 
 static void
 lpop (list_t **head)
@@ -299,8 +299,8 @@ lpop (list_t **head)
 }
 
 
-static inline
-bool is_func_prefix (const char *prefix, const char *fun)
+static inline bool
+is_func_prefix (const char *prefix, const char *fun)
 {
   size_t len = strlen (prefix);
   return (str_prefix (prefix, fun)
@@ -469,7 +469,7 @@ graph_add_symbol (const char *name, unsigned pc, bool is_func)
 
 
 /* Priority of some known symbols as a specific address might be featured
-   with mode than one symbol.  */
+   with more than one symbol.  */
 
 static int
 rate_symbol (const char *s)
@@ -514,7 +514,7 @@ graph_elf_symbol (const char *name, size_t stoff, unsigned pc, bool is_func)
 }
 
 
-/* Called from ELF reader as is comes across the symbol table.  */
+/* Called from ELF reader as it is traversing the symbol table.  */
 
 void
 graph_set_string_table (char *stab, size_t size, int n_entries)
@@ -856,7 +856,7 @@ update_call_stack (symbol_t *sym, int delta, bool is_longjmp)
 }
 
 
-/* Log each transition,i.e. change of call stack.  This makes it much more
+/* Log each transition, i.e. change of call stack.  This makes it much more
    convenient to track execution logs.  */
 
 static void
@@ -945,7 +945,7 @@ graph_update_call_depth (const decoded_t *deco)
   symbol_t *fun = func_sym[cpu_PC];
   symbol_t *cur = ystack->sym;
 
-  // Pretty-print __prologure_saves__ and __epilogue_restores__ when logging,
+  // Pretty-print __prologue_saves__ and __epilogue_restores__ when logging,
   // but don't show them in the call tree:  the tree might be cluttered up
   // because too many functions are using these helpers from libgcc.
   static symbol_t *pro_ep = NULL;
