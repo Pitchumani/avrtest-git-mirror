@@ -856,7 +856,7 @@ update_call_stack (symbol_t *sym, int delta, bool is_longjmp)
 }
 
 
-/* Log each transition,i.e. change of call stack.  This maked it much more
+/* Log each transition,i.e. change of call stack.  This makes it much more
    convenient to track execution logs.  */
 
 static void
@@ -928,6 +928,9 @@ graph_update_call_depth (const decoded_t *deco)
       break;
     case ID_ICALL: case ID_CALL: case ID_EICALL:
       call = 1;
+      break;
+    case ID_RETI:
+      call = -1;
       break;
     case ID_RET:
       // GCC might use push/push/ret for indirect jump,
