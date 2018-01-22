@@ -1,3 +1,9 @@
+2018-01-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	Add DejaGnu board description for ATmega8.
+
+	* dejagnuboards/atmega8-sim.exp: New file.
+
 2017-07-03  Georg-Johann Lay  <avr@gjlay.de>
 
 	Handle RETI in call-depth computation.
