@@ -3,7 +3,7 @@
                           avrtest NEWS
                           ============
 
-* Add support for avrxmega3 devices that see flash         r202  2018-01-22
+* Add support for avrxmega3 devices that see flash         r203  2018-01-22
   in RAM address space like ATtiny212, ATtiny1617, etc.
 
   - Support avrtest-xmega -mmcu=avrxmega3
@@ -25,6 +25,7 @@
 * Support the reduced AVR Tiny cores with only 16 GPRs.    r186  2016-07-11
   The new executables for that core architecture are
   avrtest-tiny and avrtest-tiny_log.
+
 
 * BUGFIX of wrong decoding of first instruction if         r181  2016-06-25
   entry-point is not 0x0.
