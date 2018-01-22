@@ -16,6 +16,7 @@ avrtest is an instruction set simulator for AVR core families
 
 avrtest-xmega is an instruction set simulator for AVR XMEGA core families
     avrxmega6: ATXmega128*, ...
+    avrxmega3: ATtiny212, ATtiny816, ... that see flash in RAM address space.
 
 The executable that supports AVR XMEGA cores is named avrtest-xmega.
 In addition to the avrtest simulator, it supports the XMEGA instructions

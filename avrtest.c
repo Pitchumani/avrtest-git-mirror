@@ -634,18 +634,16 @@ load_indirect (int rd, int r_addr, int adjust, int offset)
   if (adjust < 0)
     addr += adjust;
 
-#if !defined ISA_TINY
-  put_reg (rd, data_read_byte (addr + offset));
-#else
-  if (addr & 0x4000)
+#if defined ISA_XMEGA || defined ISA_TINY
+  if (arch.flash_pm_offset
+      && (word) addr > arch.flash_pm_offset)
     {
-      log_append ("{F:%04x} ", addr - 0x4000);
-      put_reg (rd, flash_read_byte (addr - 0x4000));
+      log_append ("{F:%04x} ", addr - arch.flash_pm_offset);
       add_program_cycles (1);
     }
-  else
-    put_reg (rd, data_read_byte (addr));
-#endif
+#endif // XMEGA || TINY
+
+  put_reg (rd, data_read_byte (addr + offset));
 
 #if defined ISA_XMEGA || defined ISA_TINY
   if (adjust >= 0 && !offset)
@@ -1054,6 +1052,16 @@ static OP_FUNC_TYPE func_INC (int rd, int rr)
 static OP_FUNC_TYPE func_LDS (int rd, int rr)
 {
   //TODO:RAMPD
+
+#if defined ISA_XMEGA
+  if (arch.flash_pm_offset
+      && (word) rr > arch.flash_pm_offset)
+    {
+      log_append ("{F:%04x} ", (word) rr - arch.flash_pm_offset);
+      add_program_cycles (1);
+    }
+#endif // XMEGA
+
   put_reg (rd, data_read_byte (rr));
 }
 

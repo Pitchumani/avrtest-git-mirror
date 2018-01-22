@@ -1,5 +1,22 @@
 2018-01-22  Georg-Johann Lay  <avr@gjlay.de>
 
+	Add support for devices with program memory seen in RAM
+	address space (avrxmega3).
+
+	* README: Mention avrxmega3 as valid option.
+	* Makefile (EXIT_MCUS): Add attiny3216.
+	* load-flash.c (load_elf) [arch.flash_pm_offset != 0]: Copy
+	flash-data to RAM at offset arch.flash_pm_offset.
+	* avrtest.c (load_indirect) [AVR_TINY, AVR_XMEGA]: Use
+	arch.flash_pm_offset nstead of magic 0x4000.  Always read from RAM.
+	(func_LDS): Also log flash address if LDS actually reads from flash.
+	* options.h (arch_t) [flash_pm_offset]: New field.
+	* options.c (arch_desc): Add "avrxmega3" row.  Add initializer
+	for .flash_pm_offset.
+	* dejagnuboards/attiny3216-sim.exp: New file.
+
+2018-01-22  Georg-Johann Lay  <avr@gjlay.de>
+
 	Add DejaGnu board description for ATmega8.
 
 	* dejagnuboards/atmega8-sim.exp: New file.

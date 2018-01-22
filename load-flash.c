@@ -392,7 +392,7 @@ load_elf (FILE *f, byte *flash, byte *ram, byte *eeprom)
       if (addr + memsz > MAX_FLASH_SIZE
           && vaddr <= DATA_VADDR_END)
         leave (LEAVE_FILE,
-               "program too big to fit in flash");
+               "program is too big to fit in flash");
       if (fseek (f, get_elf32_word (&phdr[i].p_offset), SEEK_SET) != 0)
         leave (LEAVE_FILE, "ELF file truncated");
 
@@ -413,10 +413,49 @@ load_elf (FILE *f, byte *flash, byte *ram, byte *eeprom)
       if (fread (flash + addr, filesz, 1, f) != 1)
         leave (LEAVE_FILE, "ELF file truncated");
 
+      bool is_data_for_sram_init = (vaddr >= DATA_VADDR
+                                    && vaddr + filesz -1 <= DATA_VADDR_END);
+
+      if (arch.flash_pm_offset)
+        {
+          if (options.do_verbose
+              && (addr + memsz + arch.flash_pm_offset < 0x10000
+                  || !is_data_for_sram_init))
+            {
+              printf (">>> CopyFlash 0x%06x -- 0x%06x to RAM 0x%06x -- 0x%06x"
+                      "\n", (unsigned) addr, (unsigned) (addr + memsz - 1),
+                      (unsigned) (addr + arch.flash_pm_offset),
+                      (unsigned) (addr + arch.flash_pm_offset + memsz - 1));
+            }
+
+          if (addr + memsz + arch.flash_pm_offset < 0x10000)
+            {
+              // Showing flash in RAM is possible; just copy.  This is faster
+              // than special-casing LDS and LD*.  The downside of just
+              // copying is that target code can write to .rodata and it
+              // will be harder to debug programs that fail due to that.
+              memcpy (ram + addr + arch.flash_pm_offset, flash + addr, memsz);
+            }
+          else if (is_data_for_sram_init)
+            {
+              // This occurs only if .data is big and hence its initializer,
+              // too.  There is no need for the initializer to be seen in
+              // RAM as the startup-code in libgcc's __do_copy_data uses
+              // LPM to read it.  Moreover, this case cannot occur on a real
+              // device as the biggest "avrxmega3" features much less RAM
+              // than supplied by attiny3216-sim.exp.  This is also the reason
+              // for why we use 0xffff as flash_addr_mask and not 0x7fff.
+              printf (">>> Skipped CopyFlash, PHDR only needed to"
+                      " initialize .data, and 0x%06x exceeds 0xffff\n",
+                      (unsigned) (addr + memsz + arch.flash_pm_offset));
+            }
+          else
+            leave (LEAVE_FILE, "program is too large to be seen in RAM");
+        }
+        
       // Also copy in SRAM
       if (options.do_initialize_sram
-          && vaddr >= DATA_VADDR
-          && vaddr + filesz -1 <= DATA_VADDR_END)
+          && is_data_for_sram_init)
         memcpy (ram + vaddr - DATA_VADDR, flash + addr, filesz);
 
       if ((unsigned) (addr + memsz) > program.size)

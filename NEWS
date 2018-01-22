@@ -3,6 +3,13 @@
                           avrtest NEWS
                           ============
 
+* Add support for avrxmega3 devices that see flash         r202  2018-01-22
+  in RAM address space like ATtiny212, ATtiny1617, etc.
+
+  - Support avrtest-xmega -mmcu=avrxmega3
+  - Add a DejaGNU board description for ATtiny3216.
+
+
 * Add assembler support to avrtest.h for:                  r196  2016-12-12  
 
   -  LOG_ON

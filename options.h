@@ -40,6 +40,8 @@ typedef struct
   bool is_tiny;
   // Mask to detect whether cpu_PC is out of bounds
   unsigned int flash_addr_mask;
+  // Offset where flash is seen in RAM address space, or 0.
+  unsigned int flash_pm_offset;
 } arch_t;
 
 extern arch_t arch;

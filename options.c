@@ -102,11 +102,15 @@ static const char GRAPH_USAGE[] =
 
 static const arch_t arch_desc[] =
   {
-    { "avr51",     false, false, false, false, 0x01ffff }, // default
-    { "avrxmega6", true,  true,  true,  false, 0x03ffff }, // default if is_xmega = 1
-    { "avrtiny",   false, false, false, true,  0x01ffff }, // default if is_tiny  = 1
-    { "avr6",      true,  true,  false, false, 0x03ffff },
-    { NULL, false, false, false, false, 0}
+    // default
+    { "avr51",     false, false, false, false, 0x01ffff, 0 },
+    // default if is_xmega = 1
+    { "avrxmega6", true,  true,  true,  false, 0x03ffff, 0 },
+    // default if is_tiny  = 1
+    { "avrtiny",   false, false, false, true,  0x01ffff, 0x4000 },
+    { "avr6",      true,  true,  false, false, 0x03ffff, 0 },
+    { "avrxmega3", false, false, true,  false, 0x00ffff, 0x8000 },
+    { NULL, false, false, false, false, 0, 0}
   };
 
 arch_t arch;
