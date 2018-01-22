@@ -150,19 +150,22 @@ http://lists.gnu.org/archive/html/avr-gcc-list/2009-09/msg00016.html
 
     make clean-exit all CC_FOR_AVR=/some-compiler-path/avr-gcc
 
-* Copy /someplace/avrtest/.dejagnurc to your $HOME and change the path
-  inside to point to directory where "board file" is located.
-  This is dejagnuboards subdirectory of avrtest files:
-
-    set board dir /someplace/avrtest/dejagnuboards
-
-* Edit /someplace/avrtest/dejagnuboards/atmega128-sim.exp and replace paths
-  to point to correct location of files for simulator (avrtest executable
-  and exit-atmega128.o object file) or add avrtest to $PATH:
+* Adjust your $HOME/.dejagnurc file (or create one if it not already
+  exists) as indicated in /someplace/avrtest/.dejagnurc.
+  Change the "avrtest_dir" path to the directory where avrtest is
+  located:
 
     set avrtest_dir "/someplace/avrtest"
 
-  atmega128-sim.exp just sets some custom variables and then loads
+* You can add /someplace to your PATH variable so that it's more
+  convenient to start avrtest.  In order to run the GCC test suite
+  this is not necessary, though.
+
+* The *-sim.exp board descriptions set the "extra_cflags" variable so that
+  the compiler finds the AVR-LibC headers.  Adjust this path to a working
+  AVR-LibC installation's include path, i.e. "-I $INSTALL_PREFIX/avr/include"
+
+  *-sim.exp just sets some custom variables and then loads
   avrtest.exp from the same directory.
 
 * Run the tests from gcc subdirectory of your avr-gcc build directory like:

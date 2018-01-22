@@ -1,5 +1,7 @@
-# Directory where we find the avrtest executable and exit-*.o module.
-set avrtest_dir "/home/georg/gnu/source/avrtest"
+# Directory where to find the avrtest executable and the exit-*.o modules.
+# "avrtest_dir" can be specified in .dejagnurc or be overriden below.
+
+# set avrtest_dir "/home/pmarques"
 
 # Used as MCU when compiling and to find the right exit*.o module.
 # If you need a specific exit-<MCU>.o module, cd to ${avrtest_dir} and
@@ -9,7 +11,8 @@ set avrtest_dir "/home/georg/gnu/source/avrtest"
 # ${avrtest_dir}/exit-${mmcu}.o
 set mmcu "atmega103"
 
-# Used to set MCU for avrtest.  One of "avr51", "avr6" or "avrxmega6".
+# MCU for avrtest.
+# One of: "avr51", "avr6", "avrxmega6", "avrxmega3", "avrtiny".
 set avrtest_mmcu "avr51"
 
 # We add to CFLAGS a directory where we find AVR-LibC headers.

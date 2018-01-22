@@ -1,1 +1,10 @@
-set boards_dir /home/pmarques/dejagnuboards
+# The directory where the "avrtest" executable and the
+# exit-*.o modules are located.  This can be override
+# in a DejaGNU *.exp board description if needed.
+set avrtest_dir "/home/pmarques"
+
+# The directory where the DejaGNU *.exp board descriptions are found.
+# If you want more directories to be searched, just add respective
+# "lappend boards_dir" lines as needed.
+set boards_dir {}
+lappend boards_dir "${avrtest_dir}/dejagnuboards"

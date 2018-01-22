@@ -1,5 +1,11 @@
 2018-01-22  Georg-Johann Lay  <avr@gjlay.de>
 
+	* .dejagnurc (avrtest_dir): Set it.  Add more comments.
+	* README (Running avr-gcc testsuite): Adjust.
+	* dejagnuboards/*.exp: No more set avrtest_dir.  Adjust comments.
+
+2018-01-22  Georg-Johann Lay  <avr@gjlay.de>
+
 	Add support for devices with program memory seen in RAM
 	address space (avrxmega3).
 
