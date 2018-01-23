@@ -1,3 +1,8 @@
+2018-01-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* dejagnuboards/exit.c (avrtest_init_argc_argv) [pargs]: Set
+	to 0x7000 for avrxmega3.
+
 2018-01-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* .dejagnurc (avrtest_dir): Set it.  Add more comments.

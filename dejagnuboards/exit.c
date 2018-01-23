@@ -83,6 +83,9 @@ avrtest_init_argc_argv (void)
   /* Use an address that won't appear as if flash was mirror'ed into
      the RAM space, i.e. pargs & 0x4000 = 0.  */
   void *pargs = (void*) 0x3000;
+#elif __AVR_ARCH__ == 103
+  /* avrxmega3 see flash starting at 0x8000, hence us a smaller address.  */
+  void *pargs = (void*) 0x7000;
 #else
   void *pargs = (void*) 0xf000;
 #endif
