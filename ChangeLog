@@ -1,5 +1,13 @@
 2018-01-24  Georg-Johann Lay  <avr@gjlay.de>
 
+	Make LOG_PSTR etc. also work for flash-strings in .rodata.
+
+	* logging.c (read_string) [flash_p=true]: If addr appears to
+	be a RAM address due to addr >= arch.flash_pm_offset,
+	then read from RAM.
+
+2018-01-24  Georg-Johann Lay  <avr@gjlay.de>
+
 	* .dejagnurc: Adjust comments.
 	(avrlibc_include_dir): Set it.
 	* dejagnuboards/gen-exp.sh: New script to generate *-sim.exp

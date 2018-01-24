@@ -396,6 +396,19 @@ read_string (char *p, unsigned addr, bool flash_p, size_t len_max)
 {
   char c;
   size_t n = 0;
+  if (flash_p
+      && arch.flash_pm_offset
+      && addr >= arch.flash_pm_offset)
+  {
+      // README states that LOG_PSTR etc. can be used to print strings in
+      // flash.  This is ambiguous for devices that see flash in RAM:
+      // A variable can reside in flash due to __flash or PRGMEM and
+      // hence in .progmem.data, or it can be located in .rodata.
+      // If the address appears as a .rodata address, then access RAM
+      // (which holds a copy of flash at arch.flash_pm_offset).
+      flash_p = false;
+  }
+
   byte *p_avr = log_cpu_address (addr, flash_p ? AR_FLASH : AR_RAM);
 
   while (++n < len_max && (c = *p_avr++))
