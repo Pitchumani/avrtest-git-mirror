@@ -10,12 +10,12 @@
 # > cd ${avrtest_dir}
 # > make exit-${mmcu}.o
 
-set mmcu "attiny40"
+set mmcu "atxmega128a3"
 
 # MCU for avrtest.
 # One of: "avr51", "avr6", "avrxmega6", "avrxmega3", "avrtiny".
 
-set avrtest_mmcu "avrtiny"
+set avrtest_mmcu "avrxmega6"
 
 # "avrlibc_include_dir" will be used as search path for include
 # files from AVR-LibC where stdio.h etc. is located.  You can set
@@ -37,6 +37,6 @@ set avrtest_mmcu "avrtiny"
 # that are FAILing due to small memory.  The simulator has plenty
 # of memory, and there is no need to stick to AVR harware limitations.
 
-set extra_ldflags "-Wl,--defsym=__heap_end=0x801fff -Wl,--defsym=__DATA_REGION_LENGTH__=8K -Wl,--defsym=__TEXT_REGION_LENGTH__=16K -Tavrtiny-rodata.x "
+set extra_ldflags "-Wl,--defsym=__heap_end=0x80ffff,--defsym=__stack=0x1fff"
 
 load_generic_config "avrtest"

@@ -83,7 +83,16 @@ set_board_info compiler  "[find_gcc]"
 # some of the IEEE test in the gcc test suite evaluate the define symbol
 # SIGNAL_SUPPRESS in order to find out whether to use signal.h when
 # checking compliance of IEEE floating point.
-# we do not have signal.h and, thus, define this symbol. 
+# we do not have signal.h and, thus, define this symbol.
+
+if { ![info exists extra_cflags] } {
+    set extra_cflags ""
+}
+
+if { [info exists avrlibc_include_dir] } {
+    set extra_cflags "${extra_cflags} -I${avrlibc_include_dir}"
+}
+
 set_board_info cflags  " -DSIGNAL_SUPPRESS -mmcu=${mmcu} ${extra_cflags}"
 set_board_info gcc,stack_size 2048
 set_board_info gcc,no_trampolines 1
