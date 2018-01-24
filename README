@@ -11,12 +11,15 @@ to run the GCC testsuite for avr-gcc.  Thus, its main audience are guys
 and ladies that develop parts of the AVR toolchain like avr-gcc or avr-libc.
 
 avrtest is an instruction set simulator for AVR core families
-    avr51: ATmega128*, AT90can128, AT90usb128*
+    avr51: ATmega128*, AT90can128, AT90usb128*, ATtiny2313, ...
     avr6:  ATmega256*
 
 avrtest-xmega is an instruction set simulator for AVR XMEGA core families
     avrxmega6: ATXmega128*, ...
     avrxmega3: ATtiny212, ATtiny816, ... that see flash in RAM address space.
+
+avrtest-tiny is an instruction set simulator for AVR TINY core families
+    avrtiny: ATtiny40, ... with only 16 GPRs and flash seen in RAM.
 
 The executable that supports AVR XMEGA cores is named avrtest-xmega.
 In addition to the avrtest simulator, it supports the XMEGA instructions
@@ -28,9 +31,9 @@ and many instructions like ADIW are not supported.  The LDS and STS
 instructions are 1-word instructions that can access SRAM in the
 range 0x40..0xbf.
 
-In the remainder, avrtest is explained.  avrtest-xmega works similar.
-avrtest does not simulate internal peripherals like timers, I/O ports,
-interrupts, etc.
+In the remainder, avrtest is explained.  avrtest-xmega and avrtext-tiny
+work similar.  avrtest does not simulate internal peripherals like timers,
+I/O ports, interrupts, etc.
 
 
 ================
@@ -52,8 +55,8 @@ int main (void)
 
 
 Compile this program as usual but link against exit-atmega128.o.
-How to build that object is explained in the next chapter.  Store the
-C source as hello.c and compile it with, e.g.
+How to build that object file is explained in the next chapter.
+Store the C source as hello.c and compile it with, e.g.
 
     avr-gcc hello.c -O -mmcu=atmega128 -o hello.elf /someplace/avrtest/exit-atmega128.o
 
@@ -95,8 +98,8 @@ int main (void)
 
 The avrtest_putchar and avrtest_getchar functions are defined in avrtest.h
 and act like putchar resp. getchar in an ordinary, hosted program:
-putchar writes a character to the host's standard output and getchar reads
-a character from the host's standard input.
+putchar writes a character to the host's standard output,
+and getchar reads a character from the host's standard input.
 
 Compile the C source with
 
@@ -152,26 +155,27 @@ http://lists.gnu.org/archive/html/avr-gcc-list/2009-09/msg00016.html
 
 * Adjust your $HOME/.dejagnurc file (or create one if it not already
   exists) as indicated in /someplace/avrtest/.dejagnurc.
-  Change the "avrtest_dir" path to the directory where avrtest is
-  located:
+  Change the "avrtest_dir" path to the directory where the avrtest
+  executable is located:
 
     set avrtest_dir "/someplace/avrtest"
 
-* You can add /someplace to your PATH variable so that it's more
-  convenient to start avrtest.  In order to run the GCC test suite
-  this is not necessary, though.
+* You can add /someplace/avrtest to your PATH variable so that it's
+  more convenient to start avrtest.  In order to run the GCC test
+  suite this is not necessary, though.
 
-* The *-sim.exp board descriptions set the "extra_cflags" variable so that
-  the compiler finds the AVR-LibC headers.  Adjust this path to a working
-  AVR-LibC installation's include path, i.e. "-I $INSTALL_PREFIX/avr/include"
+* The .dejagnurc file sets the "avrlibc_include_dir" variable that points
+  to a directory where the compiler can find stdio.h and similar headers
+  from AVR-LibC.  Adjust this path to point to the "incude/avr" subdir
+  of a valid AVR-LibC installation.  You can also adjust that path in
+  the *-sim.exp file.
 
-  *-sim.exp just sets some custom variables and then loads
-  avrtest.exp from the same directory.
+* *-sim.exp just sets some custom variables and then loads
+  avrtest.exp from the same directory to run avrtest.
 
 * Run the tests from gcc subdirectory of your avr-gcc build directory like:
 
     make -k check-gcc RUNTESTFLAGS="--target_board=atmega128-sim"
-    make -k check-gcc RUNTESTFLAGS="--target_board=atxmega128-sim"
 
 * Look in the ./gcc/testsuite subdirectory of avr-gcc build directory for
   logged results or add the -all switch to see it working 1 test at a time.
@@ -263,15 +267,16 @@ env is set to the NULL pointer if the program is executed by avrtest
 and to a non-NULL pointer when executed by avrtest_log.
 
 exit.c:avrtest_init_argc_argv() requests the command args to be put
-starting at RAM address 0xf000.  If you prefer a different location then
-simply adjust exit.c according to your needs following the source comments.
+starting at a RAM address hard-coded in exit.c::avrtest_init_argc_argv().
+If you prefer a different location then adjust exit.c according to your
+needs, following the source comments.
 
 
 ============================
 -no-args
 ============================
 
-will act as if no -args switch was supplied:  It skip all arguments
+will act as if no -args switch was supplied:  It skips all arguments
 thereafter and sets argc = 0, argv = NULL and env as described above.
 
 
@@ -279,29 +284,26 @@ thereafter and sets argc = 0, argv = NULL and env as described above.
  -no-log and logging control
 ============================
 
-* This feature is only supported by avrtest_log and avrtest-xmega_log.
+* This feature is only supported by avrtest_log.
 
 avrtest_log will log address and action of each executed instruction to
 standard output of the host.  In cases where that is too much a flood of
 information, you can start avrtest_log with -no-log and turn on instruction
 logging by executing special commands defined in avrtest.h:
 
+    // Turn on instruction logging.
     LOG_ON;
 
-Turn on instruction logging.
-
+    // Turn it off again.
     LOG_OFF;
 
-Turn it off again.
-
+    // Turn on logging for the next N instructions and then switch
+    // it off again.
     LOG_SET (N);
 
-Turn on logging for the next N instructions and then switch it off again.
-
+    // Turn on logging during performance measurement described below,
+    // i.e. if any timer is in a START / STOP round.
     LOG_PERF;
-
-Turn on logging during performance measurement described below, i.e.
-if any timer is in a START / STOP round.
 
 Please notice that this method of switching logging on / off is (low)
 intrusive to the program.  The commands listed above are translated by
@@ -315,9 +317,9 @@ LOG_ON and LOG_OFF are also supported for assembler.
  Logging values to the host computer
 ====================================
 
-* This feature is only supported by avrtest_log and avrtest-xmega_log.
+* This feature is only supported by avrtest_log.
 
-In order to get values out of the running program the following
+In order to get values out of the running program, the following
 low-overhead, low-intrusive commands might be useful:
 
     LOG_U8 (X);         print X as unsigned 8-bit decimal value
@@ -540,7 +542,7 @@ the volatile accesses does not matter as it is ignored by PERF_START_CALL.
  Timing data and random values
 ==============================
 
-* This feature is only supported by avrtest_log and avrtest-xmega_log.
+* This feature is only supported by avrtest_log.
 
 Following functions return a 32-bit value:
 
