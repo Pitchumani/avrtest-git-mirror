@@ -1,3 +1,8 @@
+2018-02-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* dejagnuboards/avrtest.exp (sim_load): If a test PASSes, then
+	also return the program's output.
+
 2018-01-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	Make LOG_PSTR etc. also work for flash-strings in .rodata.

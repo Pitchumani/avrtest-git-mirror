@@ -40,7 +40,11 @@ proc sim_load {dest prog args} {
 
     set exit_position [string last EXIT $result ]
     if { $exit_position != -1 } then {
-	return [list "pass" ""]
+	# Try to separate the program's very output as used by dg-output
+	# from simulator babbling.
+	set end_output [string last "\n\n exit status" $result]
+	set prog_output [string range $result 0 ${end_output}]
+	return [list "pass" "${prog_output}"]
     }
     set abort_position [string last ABORTED $result ]
     if { $abort_position != -1 } then {
