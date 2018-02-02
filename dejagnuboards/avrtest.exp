@@ -64,30 +64,12 @@ process_multilib_options ""
 
 set_board_info is_simulator 1
 
-#set_board_info gdb,nosignals 1
-#set_board_info gdb,noresults 1
-#set_board_info gdb,start_symbol "*0x0"
-#set_board_info gdb,short_int 1
-#set_board_info gdb,no_trampolines 1
-#set_board_info no_long_long 1
-#set_board_info gdb,noargs 1
-
-# It isn't visible in the target triple, so we set it explicitly.  The
-# *linked* format is currently mmo, but those cases where this matters we
-# can deal with separately.
+# Object format isn't visible in the target triple, so we set it explicitly.
 set_board_info obj_format "elf"
 
 # The compiler used to build for this board. This has *nothing* to do
 # with what compiler is tested if we're testing gcc.
 set_board_info compiler  "[find_gcc]"
-
-# We only support newlib on this target. We assume that all multilib
-# options have been specified before we get here.
-#
-# some of the IEEE test in the gcc test suite evaluate the define symbol
-# SIGNAL_SUPPRESS in order to find out whether to use signal.h when
-# checking compliance of IEEE floating point.
-# we do not have signal.h and, thus, define this symbol.
 
 if { ![info exists extra_cflags] } {
     set extra_cflags ""
@@ -97,25 +79,43 @@ if { [info exists avrlibc_include_dir] } {
     set extra_cflags "${extra_cflags} -I${avrlibc_include_dir}"
 }
 
+# Some of the IEEE test in the gcc testsuite evaluate the define symbol
+# SIGNAL_SUPPRESS in order to find out whether to use signal.h when
+# checking compliance of IEEE floating point.  We do not have signal.h
+# and, thus, define this symbol.
+
 set_board_info cflags  " -DSIGNAL_SUPPRESS -mmcu=${mmcu} ${extra_cflags}"
 set_board_info gcc,stack_size 2048
 set_board_info gcc,no_trampolines 1
 set_board_info gcc,no_pch_tests 1
-set_board_info gcc,keeps_null_pointer_checks 1
 
-# Linking against exit-atmega64.o is very much preferred over
-# compiling against exit.c.
+# target-supports.exp::check_effective_target_keeps_null_pointer_checks
+# states:
+#
+#   Return 1 if according to target_info struct and explicit target list
+#   target disables -fdelete-null-pointer-checks.  Targets should return 0
+#   if they simply default to -fno-delete-null-pointer-checks but obey
+#   -fdelete-null-pointer-checks when passed explicitly (and tests that
+#   depend on this option should do that).
+#
+# This is the case for avr; hence do *NOT* set the following var to 1.
+# set_board_info gcc,keeps_null_pointer_checks 1
+
+# Linking against exit-${mmcu}.o brings in code to setup stdout so that
+# printf's output will appear on the host terminal.  Also use a full-fledged
+# version of printf so that printing float works as expected.
 set_board_info ldflags "${avrtest_dir}/exit-${mmcu}.o -Wl,-u,vfprintf -lprintf_flt ${extra_ldflags} -L${avrtest_dir}"
 
 # Restrict compatibility tests. And optimise to reduce size.
 set COMPAT_SKIPS [list {VA} {COMPLEX_INT}]
 set COMPAT_OPTIONS [list [list {-Os -mno-interrupts  -mcall-prologues} {-Os -mno-interrupts  -mcall-prologues}]]
+
 # No linker script needed - the simulator is the main environment for this
-# target.
+# target.  Some tests for __flash1 specify their own linker script in
+# dg-options, e.g. -Tavr51-flash1.x.  In general, the default is just fine,
+# and pretending more memory is achieved by adding some extra_ldflags
+# in ${mmcu}-sim.exp.
 set_board_info ldscript ""
 
 # Return codes are supported by the simulator.
 set_board_info needs_status_wrapper 0
-
-# FIXME: Some gdb board variables are usually here.  I currently have no clue
-# what to set them to, so I won't.
