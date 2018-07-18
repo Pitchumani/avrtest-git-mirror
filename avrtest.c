@@ -42,6 +42,9 @@
 #define SPL     (0x3D + IOBASE)
 #define EIND    (0x3C + IOBASE)
 #define RAMPZ   (0x3B + IOBASE)
+#define RAMPY   (0x3A + IOBASE)
+#define RAMPX   (0x39 + IOBASE)
+#define RAMPD   (0x38 + IOBASE)
 
 // ----------------------------------------------------------------------------
 // information about program incarnation (avrtest_log, avrtest-xmega, ...)
@@ -49,9 +52,9 @@
 // matter e.g. in option parsing, so that these modules are independent
 // of ISA_XMEGA and AVRTEST_LOG.
 
-// io_base :        load-flash.c:decode_opcode()   map I/O -> RAM
-// is_avrtest_log : load-flash.c:load_elf()        load ELF symbols
-// is_xmega :       options.c:parse_args()         legal -mmcu=MCU
+// io_base:           load-flash.c:decode_opcode()   map I/O -> RAM
+// is_avrtest_log:    load-flash.c:load_elf()        load ELF symbols
+// is_xmega, is_tiny: options.c:parse_args()         legal -mmcu=MCU
 
 #ifdef ISA_XMEGA
 #   define IOBASE  0
@@ -419,6 +422,11 @@ const sfr_t named_sfr[] =
     { SPH,   "SPH",   NULL },
     { RAMPZ, "RAMPZ", NULL },
     { EIND,  "EIND",  &arch.has_eind },
+#ifdef ISA_XMEGA
+    { RAMPX, "RAMPX", &arch.has_rampd },
+    { RAMPY, "RAMPY", &arch.has_rampd },
+    { RAMPD, "RAMPD", &arch.has_rampd },
+#endif // ISA_XMEGA
 
     { 0, NULL, NULL }
   };
@@ -461,7 +469,7 @@ void* get_mem (unsigned n, size_t size, const char *purpose)
            (unsigned) (n * size), purpose);
   return p;
 #else
-  leave (LEAVE_FATAL, "alloc_mem must be unreachable");
+  leave (LEAVE_FATAL, "get_mem must be unreachable");
   return NULL;
 #endif
 }
@@ -615,6 +623,16 @@ do_subtraction_8 (int rd, int value1, int value2, int carry,
   update_flags (FLAG_H | FLAG_S | FLAG_V | FLAG_N | FLAG_Z | FLAG_C, sreg);
 }
 
+static INLINE byte
+get_ramp (int r_addr)
+{
+    unsigned i = (r_addr - 26) / 2;
+    if (i <= 2)
+        return data_read_byte (i + RAMPX);
+    else
+        return data_read_byte (RAMPD);
+}
+
 static INLINE void
 store_logical_result (int rd, int result)
 {
@@ -634,8 +652,16 @@ load_indirect (int rd, int r_addr, int adjust, int offset)
   if (adjust < 0)
     addr += adjust;
 
+#if defined ISA_XMEGA
+  if (arch.has_rampd)
+    {
+      byte ramp = get_ramp (r_addr);
+      addr |= ramp << 16;
+    }
+  else
+#endif // ISA_XMEGA
 #if defined ISA_XMEGA || defined ISA_TINY
-  if (arch.flash_pm_offset
+  if ((is_tiny || arch.flash_pm_offset)
       && (word) addr > arch.flash_pm_offset)
     {
       log_append ("{F:%04x} ", addr - arch.flash_pm_offset);
@@ -664,6 +690,14 @@ store_indirect (int rd, int r_addr, int adjust, int offset)
 
   if (adjust < 0)
     addr += adjust;
+
+#if defined ISA_XMEGA
+  if (arch.has_rampd)
+    {
+      byte ramp = get_ramp (r_addr);
+      addr |= ramp << 16;
+    }
+#endif // ISA_XMEGA
 
   data_write_byte (addr + offset, get_reg (rd));
 
@@ -1051,11 +1085,14 @@ static OP_FUNC_TYPE func_INC (int rd, int rr)
 /* 1001 000d dddd 0000 | LDS */
 static OP_FUNC_TYPE func_LDS (int rd, int rr)
 {
-  //TODO:RAMPD
-
 #if defined ISA_XMEGA
-  if (arch.flash_pm_offset
-      && (word) rr > arch.flash_pm_offset)
+  if (arch.has_rampd)
+    {
+      byte ramp = get_ramp (0 /* RAMPD */);
+      rr |= ramp << 16;
+    }
+  else if (arch.flash_pm_offset
+           && (word) rr > arch.flash_pm_offset)
     {
       log_append ("{F:%04x} ", (word) rr - arch.flash_pm_offset);
       add_program_cycles (1);
@@ -1206,7 +1243,14 @@ static OP_FUNC_TYPE func_ROR (int rd, int rr)
 /* 1001 001d dddd 0000 | STS */
 static OP_FUNC_TYPE func_STS (int rd, int rr)
 {
-  //TODO:RAMPD
+#ifdef ISA_XMEGA
+  if (arch.has_rampd)
+    {
+      byte ramp = get_ramp (0 /* RAMPD */);
+      rr |= ramp << 16;
+    }
+#endif // ISA_XMEGA
+
   data_write_byte (rr, get_reg (rd));
 }
 

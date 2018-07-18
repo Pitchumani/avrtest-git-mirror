@@ -17,6 +17,8 @@ avrtest is an instruction set simulator for AVR core families
 avrtest-xmega is an instruction set simulator for AVR XMEGA core families
     avrxmega6: ATXmega128*, ...
     avrxmega3: ATtiny212, ATtiny816, ... that see flash in RAM address space.
+    avrxmega7: ATXmega128A1, ATXmega128A1U, ... that use RAMPx as high-byte
+               for RAM accesses.
 
 avrtest-tiny is an instruction set simulator for AVR TINY core families
     avrtiny: ATtiny40, ... with only 16 GPRs and flash seen in RAM.

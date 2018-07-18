@@ -102,15 +102,16 @@ static const char GRAPH_USAGE[] =
 
 static const arch_t arch_desc[] =
   {
-    // default
-    { "avr51",     false, false, false, false, 0x01ffff, 0 },
+    // default 3-pyte PC, EIND,  XMEGA, RAMPD  TINY, FlashMask, Flash-PM Offset
+    { "avr51",     false, false, false, false, false, 0x01ffff, 0 },
     // default if is_xmega = 1
-    { "avrxmega6", true,  true,  true,  false, 0x03ffff, 0 },
+    { "avrxmega6", true,  true,  true,  false, false, 0x03ffff, 0 },
     // default if is_tiny  = 1
-    { "avrtiny",   false, false, false, true,  0x01ffff, 0x4000 },
-    { "avr6",      true,  true,  false, false, 0x03ffff, 0 },
-    { "avrxmega3", false, false, true,  false, 0x00ffff, 0x8000 },
-    { NULL, false, false, false, false, 0, 0}
+    { "avrtiny",   false, false, false, false, true,  0x01ffff, 0x4000 },
+    { "avr6",      true,  true,  false, false, false, 0x03ffff, 0 },
+    { "avrxmega3", false, false, true,  false, false, 0x00ffff, 0x8000 },
+    { "avrxmega7", true,  true,  true,  true,  false, 0x03ffff, 0 },
+    { NULL,        false, false, false, false, false, 0, 0}
   };
 
 arch_t arch;
@@ -126,8 +127,6 @@ typedef struct
   const char *name;
   // address of target variable
   int *pflag;
-  // default value
-  //  int deflt;
   // string after -foo=
   const char **psuffix;
 } option_t;

@@ -1,5 +1,24 @@
 2018-02-01  Georg-Johann Lay  <avr@gjlay.de>
 
+	Support -mmcu=avrxmega7 that uses RAMPX, RAMPY, RAMPZ
+	resp. RAMPD as bits 16...23 for RAM accesses.
+
+	* options.h (arch_t): Add field .has_rampd.
+	* options.c (arch_desc): Add entry for "avrxmega7".
+	Add initializers for new field .has_rampd.
+	* testavr.h (MAX_RAM_SIZE) [ISA_XMEGA]: Increase size to 256 * 64 KiB.
+	* avrtest.c (RAMPX, RAMPY, RAMPD): New macros.
+	(named_sfr) [ISA_XMEGA]: Add entries for RAMPX/Y/D.
+	(get_ramp): New static function.
+	(load_indirect, store_indirect) [ISA_XMEGA & arch.has_rampd]:
+	Extend effective address by content of RAMPX/Y/Z.
+	(func_LDS, func_STS) [ISA_XMEGA & arch.has_rampd]: Extend effective
+	address by content of RAMPD.
+	* logging.c (log_add_data_mov) [addr >= 0x10000 & arch.has_rampd]:
+	Print address as %02x:%04x.
+
+2018-02-01  Georg-Johann Lay  <avr@gjlay.de>
+
 	* dejagnuboards/avrtest.exp (sim_load): If a test PASSes, then
 	also return the program's output.
 

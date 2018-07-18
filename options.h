@@ -36,6 +36,8 @@ typedef struct
   bool has_eind;
   // True if this is XMEGA
   bool is_xmega;
+  // True if the architecture has the RAMPD special function register.
+  bool has_rampd;
   // True if this is reduced TINY
   bool is_tiny;
   // Mask to detect whether cpu_PC is out of bounds

@@ -31,9 +31,14 @@
 // ---------------------------------------------------------------------------
 //     configuration values (in bytes).
 
-#define MAX_RAM_SIZE     (64 * 1024)
-#define MAX_FLASH_SIZE  (256 * 1024)  // Must be at least 128KB
-#define MAX_EEPROM_SIZE  (16 * 1024)  // .eeprom is read from ELF but unused
+#ifdef ISA_XMEGA
+#define MAX_RAM_SIZE    (0x1000000)     // 3-byte addresses due to RAMPx.
+#else
+#define MAX_RAM_SIZE    (0x10000)
+#endif // ISA_XMEGA
+
+#define MAX_FLASH_SIZE  (0x40000)       // Must be at least 128KiB
+#define MAX_EEPROM_SIZE (16 * 1024)     // .eeprom is read from ELF but unused
 
 #define REGX    26
 #define REGY    28
