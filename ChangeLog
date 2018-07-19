@@ -1,4 +1,19 @@
-2018-02-01  Georg-Johann Lay  <avr@gjlay.de>
+2018-07-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	Correctly adjust RAMPX, RAMPY, RAMPZ in pre-decrement and
+	post-increment loads and stores.
+
+	* avrtest.c (update_reg_and_ramp, add_address): New static
+	functions.
+	(load_indirect, store_indirect): Use them to adjust the full
+	address, including RAMPX/Y/Z if appropriate, for pre-decrement
+	and post-increment loads and stores.
+	(ram_valid_mask): New static var.
+	(execute): Initialize it.
+	(load_program_memory): Only log writeback of RAMPZ if it is
+	actually changed by ELPM Z+.
+
+2018-07-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	Support -mmcu=avrxmega7 that uses RAMPX, RAMPY, RAMPZ
 	resp. RAMPD as bits 16...23 for RAM accesses.

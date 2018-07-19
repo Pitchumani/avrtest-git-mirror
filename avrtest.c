@@ -115,6 +115,8 @@ static byte cpu_reg[0x20];
 // and actual SRAM
 static byte cpu_data[MAX_RAM_SIZE];
 static byte cpu_eeprom[MAX_EEPROM_SIZE];
+// For accesses into `cpu_data'.
+static unsigned ram_valid_mask;
 
 // flash
 static byte cpu_flash[MAX_FLASH_SIZE];
@@ -623,6 +625,14 @@ do_subtraction_8 (int rd, int value1, int value2, int carry,
   update_flags (FLAG_H | FLAG_S | FLAG_V | FLAG_N | FLAG_Z | FLAG_C, sreg);
 }
 
+static INLINE void
+store_logical_result (int rd, int result)
+{
+  put_reg (rd, result);
+  update_flags (FLAG_S | FLAG_V | FLAG_N | FLAG_Z,
+                flag_update_table_logical[result]);
+}
+
 static INLINE byte
 get_ramp (int r_addr)
 {
@@ -634,11 +644,32 @@ get_ramp (int r_addr)
 }
 
 static INLINE void
-store_logical_result (int rd, int result)
+update_reg_and_ramp (int r_addr, int addr, int adjust)
 {
-  put_reg (rd, result);
-  update_flags (FLAG_S | FLAG_V | FLAG_N | FLAG_Z,
-                flag_update_table_logical[result]);
+  put_word_reg (r_addr, addr);
+
+  // Only log writeback of RAMPx if it actually changed.
+
+  word lo16 = addr & 0xffff;
+  if (is_xmega && arch.has_rampd)
+    if ((adjust == -1 && lo16 == 0xffff)
+        || (adjust == 1 && lo16 == 0))
+      {
+        unsigned i = (r_addr - 26) / 2;
+        data_write_byte (i + RAMPX, addr >> 16);
+      }
+}
+
+/* Add two RAM address values and apply the appropriate wrap-around
+   for 2-byte resp. 3-byte addresses.  Used by `load_indirect' and
+   `store_indirect' below.  */
+
+static INLINE int
+add_address (int addr, int adjust)
+{
+  return is_xmega
+    ? (addr + adjust) & ram_valid_mask
+    : (addr + adjust) & 0xffff;
 }
 
 /* 10q0 qq0d dddd 1qqq | LDD */
@@ -646,20 +677,14 @@ store_logical_result (int rd, int result)
 static INLINE void
 load_indirect (int rd, int r_addr, int adjust, int offset)
 {
-  //TODO: use RAMPx registers to address more than 64kb of RAM
   int addr = get_word_reg (r_addr);
 
-  if (adjust < 0)
-    addr += adjust;
+  if (is_xmega && arch.has_rampd)
+    addr |= get_ramp (r_addr) << 16;
 
-#if defined ISA_XMEGA
-  if (arch.has_rampd)
-    {
-      byte ramp = get_ramp (r_addr);
-      addr |= ramp << 16;
-    }
-  else
-#endif // ISA_XMEGA
+  if (adjust < 0)
+    addr = add_address (addr, adjust);
+
 #if defined ISA_XMEGA || defined ISA_TINY
   if ((is_tiny || arch.flash_pm_offset)
       && (word) addr > arch.flash_pm_offset)
@@ -669,7 +694,7 @@ load_indirect (int rd, int r_addr, int adjust, int offset)
     }
 #endif // XMEGA || TINY
 
-  put_reg (rd, data_read_byte (addr + offset));
+  put_reg (rd, data_read_byte (add_address (addr, offset)));
 
 #if defined ISA_XMEGA || defined ISA_TINY
   if (adjust >= 0 && !offset)
@@ -677,29 +702,24 @@ load_indirect (int rd, int r_addr, int adjust, int offset)
 #endif
 
   if (adjust > 0)
-    addr += adjust;
+    addr = add_address (addr, adjust);
+
   if (adjust)
-    put_word_reg (r_addr, addr);
+    update_reg_and_ramp (r_addr, addr, adjust);
 }
 
 static INLINE void 
 store_indirect (int rd, int r_addr, int adjust, int offset)
 {
-  //TODO: use RAMPx registers to address more than 64kb of RAM
   int addr = get_word_reg (r_addr);
 
+  if (is_xmega && arch.has_rampd)
+    addr |= get_ramp (r_addr) << 16;
+
   if (adjust < 0)
-    addr += adjust;
+    addr = add_address (addr, adjust);
 
-#if defined ISA_XMEGA
-  if (arch.has_rampd)
-    {
-      byte ramp = get_ramp (r_addr);
-      addr |= ramp << 16;
-    }
-#endif // ISA_XMEGA
-
-  data_write_byte (addr + offset, get_reg (rd));
+  data_write_byte (add_address (addr, offset), get_reg (rd));
 
 #if defined ISA_XMEGA || defined ISA_TINY
   if (adjust >= 0 && !offset)
@@ -707,9 +727,10 @@ store_indirect (int rd, int r_addr, int adjust, int offset)
 #endif
 
   if (adjust > 0)
-    addr += adjust;
+    addr = add_address (addr, adjust);
+
   if (adjust)
-    put_word_reg (r_addr, addr);
+    update_reg_and_ramp (r_addr, addr, adjust);
 }
 
 static INLINE void
@@ -723,7 +744,7 @@ load_program_memory (int rd, bool use_RAMPZ, bool incr)
     {
       address++;
       put_word_reg (REGZ, address & 0xFFFF);
-      if (use_RAMPZ)
+      if (use_RAMPZ && (address & 0xFFFF) == 0)
         data_write_byte (RAMPZ, address >> 16);
     }
 }
@@ -1806,6 +1827,8 @@ do_step (void)
 static INLINE void
 execute (void)
 {
+  ram_valid_mask = (is_xmega && arch.has_rampd) ? 0xffffff : 0xffff;
+
   dword max_insns = program.max_insns;
 
   for (;;)
